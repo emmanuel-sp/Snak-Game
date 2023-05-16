@@ -43,8 +43,8 @@ public class HelloApplication extends Application {
 
     //Variables
     private static Stack<Rectangle> body = new Stack<>();
-    private final static int ROWS = 19;
-    private final static int COLS = 19;
+    private final static int ROWS = 25;
+    private final static int COLS = 35;
     private static int[] headA = new int[]{ROWS / 2, COLS / 2};
     private static int[] tailA = new int[]{ROWS / 2, COLS / 2};
 
@@ -115,16 +115,16 @@ public class HelloApplication extends Application {
 
     public void init() {
         pane.setGridLinesVisible(true);
-        pane.setHgap(.75);
-        pane.setVgap(.75);
+        pane.setHgap(0);
+        pane.setVgap(0);
 
         for (int i = 0; i < ROWS; i++) {
             for (int j = 0; j < COLS; j++) {
-                recs[i][j] = new Rectangle(27, 27, Color.BLACK);
+                recs[i][j] = new Rectangle(21, 21, Color.BLACK);
                 pane.add(recs[i][j], j, i);
             }
         }
-        recs[ROWS / 2][COLS / 2].setFill(Color.GREEN);
+        recs[ROWS / 2][COLS / 2].setFill(Color.LIME);
         head = recs[ROWS / 2][COLS / 2];
         tail = recs[ROWS / 2][COLS / 2];
         body.push(head);
@@ -145,31 +145,25 @@ public class HelloApplication extends Application {
     public void go() {
         try {
             while (going) {
-                for (Rectangle item : body) {
-                    item.setFill(Color.BLACK);
-                }
-                body.pop();
+                body.elementAt(body.size() - 1).setFill(Color.BLACK);
+                body.remove(body.size() - 1);
                 if (goingUp) {
-                    headA[0]--;
-                    head = recs[headA[0]][headA[1]];
+                    head = recs[pane.getRowIndex(head) - 1][pane.getColumnIndex(head)];
                 }
                 if (goingDown) {
-                    headA[0]++;
-                    head = recs[headA[0]][headA[1]];
+                    head = recs[pane.getRowIndex(head) + 1][pane.getColumnIndex(head)];
                 }
                 if (goingRight) {
-                    headA[1]++;
-                    head = recs[headA[0]][headA[1]];
+                    head = recs[pane.getRowIndex(head)][pane.getColumnIndex(head) + 1];
                 }
                 if (goingLeft) {
-                    headA[1]--;
-                    head = recs[headA[0]][headA[1]];
+                    head = recs[pane.getRowIndex(head)][pane.getColumnIndex(head) - 1];
                 }
                 body.push(head);
                 for (Rectangle item : body) {
-                    item.setFill(Color.GREEN);
+                    item.setFill(Color.LIME);
                 }
-                Thread.sleep(75);
+                Thread.sleep(120);
 
             }
         } catch (IndexOutOfBoundsException | InterruptedException e) {
@@ -187,7 +181,7 @@ public class HelloApplication extends Application {
             if (goingLeft) {
                 goRight();
             }
-            head.setFill(Color.GREEN);
+            head.setFill(Color.LIME);
         }
 
     }
