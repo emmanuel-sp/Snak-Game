@@ -1,52 +1,43 @@
 package happy.test.javafxte;
 
 import javafx.application.Application;
-import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
-import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-import javafx.scene.control.Button;
 import javafx.geometry.Insets;
 import javafx.scene.layout.GridPane;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.paint.Color;
-import javafx.scene.input.KeyEvent;
 import javafx.scene.input.KeyCode;
-import javafx.event.EventType;
 import java.lang.Thread;
-import java.lang.RuntimeException;
 import java.lang.InterruptedException;
 import java.lang.IndexOutOfBoundsException;
 import java.io.IOException;
-import javafx.animation.Timeline;
-import javafx.animation.KeyFrame;
-import javafx.animation.KeyValue;
-import javafx.util.Duration;
 import java.util.Stack;
-import java.util.concurrent.TimeUnit;
+import javafx.scene.layout.Background;
+import javafx.scene.layout.BackgroundFill;
+import javafx.scene.layout.CornerRadii;
+import javafx.scene.text.Text;
+import javafx.scene.text.Font;
+import javafx.scene.text.TextAlignment;
 
 public class HelloApplication extends Application {
-
     private VBox root;
-    @FXML
-    private Label welcomeText;
-    private Button click;
-    private GridPane pane;
-    private Rectangle[][] recs;
-
+    private final GridPane pane;
+    private final Rectangle[][] recs;
     private Rectangle head;
-    private Rectangle tail;
     private Rectangle seed;
+
+    private Text text;
+
 
     //Variables
     private static Stack<Rectangle> body = new Stack<>();
-    private final static int ROWS = 19;
-    private final static int COLS = 19;
-    private static int[] headA = new int[]{ROWS / 2, COLS / 2};
-    private static int[] tailA = new int[]{ROWS / 2, COLS / 2};
+    private final static int ROWS = 25;
+    private final static int COLS = 35;
+
+    private static int length = 1;
 
     private boolean going = false;
     private boolean goingUp = false;
@@ -54,22 +45,23 @@ public class HelloApplication extends Application {
     private boolean goingRight = false;
     private boolean goingLeft = false;
 
-    private static int moved = 0;
-    private static int size = 1;
-
-
     public HelloApplication() {
-        root = new VBox(20);
-        welcomeText = new Label();
-        click = new Button("Hello!");
+        root = new VBox(0);
         pane = new GridPane();
         recs = new Rectangle[ROWS][COLS];
+        text = new Text("Length: 1");
 
     }
     @Override
     public void start(Stage stage) throws IOException {
-        root.getChildren().addAll(pane);
+        text.setFont(new Font(25));
+        text.setFill(Color.WHITESMOKE);
+        text.setTextAlignment(TextAlignment.LEFT);
+        BackgroundFill b = new BackgroundFill(Color.BLACK, CornerRadii.EMPTY, Insets.EMPTY);
+        pane.setBackground(new Background(b));
+        root.getChildren().addAll(pane, text);
         Scene scene = new Scene(root);
+        scene.setFill(Color.PALEVIOLETRED);
         stage.setResizable(false);
         stage.setTitle("Snake");
         stage.setScene(scene);
@@ -114,100 +106,104 @@ public class HelloApplication extends Application {
     }
 
     public void init() {
-        pane.setGridLinesVisible(true);
-        pane.setHgap(.75);
-        pane.setVgap(.75);
+        pane.setHgap(.6);
+        pane.setVgap(.6);
 
         for (int i = 0; i < ROWS; i++) {
             for (int j = 0; j < COLS; j++) {
-                recs[i][j] = new Rectangle(27, 27, Color.BLACK);
+                recs[i][j] = new Rectangle(21, 21, Color.BLACK);
                 pane.add(recs[i][j], j, i);
             }
         }
-        recs[ROWS / 2][COLS / 2].setFill(Color.GREEN);
+
+        recs[ROWS / 2][COLS / 2].setFill(Color.LIME);
         head = recs[ROWS / 2][COLS / 2];
-        tail = recs[ROWS / 2][COLS / 2];
         body.push(head);
         seed = recs[5][7];
-        seed.setFill((Color.RED));
-
-
+        seed.setFill(Color.RED);
         root.setAlignment(Pos.CENTER);
-        root.setPadding(new Insets(10,10,10,10));
+        root.setPadding(new Insets(10,10,15,10));
 
     }
 
     public static void main(String[] args) {
-        //System.out.println(tail[0]);
         launch();
     }
 
     public void go() {
         try {
             while (going) {
-                for (Rectangle item : body) {
-                    item.setFill(Color.BLACK);
-                }
-                body.pop();
-                if (goingUp) {
-                    headA[0]--;
-                    head = recs[headA[0]][headA[1]];
-                }
-                if (goingDown) {
-                    headA[0]++;
-                    head = recs[headA[0]][headA[1]];
-                }
-                if (goingRight) {
-                    headA[1]++;
-                    head = recs[headA[0]][headA[1]];
-                }
-                if (goingLeft) {
-                    headA[1]--;
-                    head = recs[headA[0]][headA[1]];
-                }
-                body.push(head);
-                for (Rectangle item : body) {
-                    item.setFill(Color.GREEN);
-                }
-                Thread.sleep(75);
+                int headRow = GridPane.getRowIndex(head);
+                int headCol = GridPane.getColumnIndex(head);
 
+                int newRow = headRow;
+                int newCol = headCol;
+
+                if (goingUp) {
+                    newRow--;
+                } else if (goingDown) {
+                    newRow++;
+                } else if (goingRight) {
+                    newCol++;
+                } else if (goingLeft) {
+                    newCol--;
+                }
+
+                Rectangle newHead = recs[newRow][newCol];
+                if (newHead != seed && body.contains(newHead)) {
+                    restartGame();
+                } else {
+                    if (newHead != seed) {
+                        Rectangle tail = body.pop();
+                        tail.setFill(Color.BLACK);
+                    } else {
+                        seed.setFill(Color.BLACK);
+                        getSeed();
+                        seed.setFill(Color.RED);
+                        length++;
+                        text.setText("Length: " + length);
+
+                    }
+
+                    newHead.setFill(Color.LIME);
+                    body.add(0, newHead);
+                    head = newHead;
+                }
+
+                Thread.sleep(100);
             }
         } catch (IndexOutOfBoundsException | InterruptedException e) {
             going = false;
             System.out.println("ERROR");
-            if (goingUp) {
-                goDown();
-            }
-            if (goingDown) {
-                goUp();
-            }
-            if (goingRight) {
-                goLeft();
-            }
-            if (goingLeft) {
-                goRight();
-            }
-            head.setFill(Color.GREEN);
+            restartGame();
         }
 
     }
 
-    private void goUp() {
-        headA[0]--;
-        head = recs[headA[0]][headA[1]];
+    private void getSeed() {
+        int seedX = (int)(Math.random() * ROWS);
+        int seedY = (int)(Math.random() * COLS);
+        seed = recs[seedX][seedY];
+        if (seed.getFill() == Color.LIME) {
+            getSeed();
+        }
     }
-    private void goDown() {
-        headA[0]++;
-        head = recs[headA[0]][headA[1]];
 
-    }
-    private void goRight() {
-        headA[1]++;
-        head = recs[headA[0]][headA[1]];
-    }
-    private void goLeft() {
-        headA[1]--;
-        head = recs[headA[0]][headA[1]];
+    private void restartGame() {
+        for (Rectangle item : body) {
+            item.setFill(Color.BLACK);
+        }
+        body.clear();
+        head = recs[ROWS / 2][COLS / 2];
+        body.push(head);
+        going = false;
+        goingRight = false;
+        goingLeft = false;
+        goingUp = false;
+        goingDown = false;
+        head.setFill(Color.LIME);
+        length = 1;
+        text.setText("Length: 1");
     }
 
     public static void runInNewThread(Runnable task, String name) {
