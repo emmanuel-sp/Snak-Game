@@ -46,6 +46,11 @@ public class SnakeGame extends Application {
     private boolean goingRight = false;
     private boolean goingLeft = false;
 
+    private boolean previousGoingUp = false;
+    private boolean previousGoingDown = false;
+    private boolean previousGoingRight = false;
+    private boolean previousGoingLeft = false;
+
     int count = 0;
     boolean counting = false;
 
@@ -75,35 +80,39 @@ public class SnakeGame extends Application {
                 runInNewThread(() -> go(), "");
             }
             if (e.getCode() == KeyCode.UP || e.getCode() == KeyCode.W) {
-                going = true;
-                if (!goingUp && !goingDown) {
+                if (!previousGoingDown || body.size() == 1) {
+                    going = true;
                     goingUp = true;
+                    goingDown = false;
                     goingRight = false;
                     goingLeft = false;
                 }
             }
             if (e.getCode() == KeyCode.DOWN || e.getCode() == KeyCode.S) {
-                going = true;
-                if (!(goingDown || goingUp)) {
+                if (!previousGoingUp || body.size() == 1) {
+                    going = true;
+                    goingUp = false;
                     goingDown = true;
                     goingRight = false;
                     goingLeft = false;
                 }
             }
             if (e.getCode() == KeyCode.RIGHT || e.getCode() == KeyCode.D) {
-                going = true;
-                if (!goingRight && !goingLeft) {
-                    goingRight = true;
+                if (!previousGoingLeft || body.size() == 1) {
+                    going = true;
                     goingUp = false;
                     goingDown = false;
+                    goingRight = true;
+                    goingLeft = false;
                 }
             }
             if (e.getCode() == KeyCode.LEFT || e.getCode() == KeyCode.A) {
-                going = true;
-                if (!goingLeft && !goingRight) {
-                    goingLeft = true;
+                if (!previousGoingRight || body.size() == 1) {
+                    going = true;
                     goingUp = false;
                     goingDown = false;
+                    goingRight = false;
+                    goingLeft = true;
                 }
             }
         });
@@ -183,6 +192,10 @@ public class SnakeGame extends Application {
                 if (counting) {
                     count++;
                 }
+                previousGoingUp = goingUp;
+                previousGoingDown = goingDown;
+                previousGoingRight = goingRight;
+                previousGoingLeft = goingLeft;
                 Thread.sleep(100);
             }
         } catch (IndexOutOfBoundsException | InterruptedException e) {
@@ -222,11 +235,11 @@ public class SnakeGame extends Application {
         text.setText("Length: ( 1 )");
         System.out.println(highscore);
     }
-
+    
     public static void runInNewThread(Runnable task, String name) {
         Thread t = new Thread(task, name);
         t.setDaemon(true);
         t.start();
     } // runInNewThread
-
+    //END HERE
 }
